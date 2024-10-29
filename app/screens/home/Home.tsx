@@ -58,8 +58,13 @@ export default function Home() {
           // setData(_data);
           if (page === 1) {
             setData(_data);
+            currentData.current = _data;
           } else {
-            setData(prevData => [...prevData, ..._data]);
+            setData(prevData => {
+              const newData = [...prevData, ..._data];
+              currentData.current = newData;
+              return newData;
+            });
           }
           setRefreshing(false);
           setLoadingMore(false);
@@ -75,14 +80,6 @@ export default function Home() {
   useEffect(() => {
     getData();
   }, []);
-
-  useEffect(() => {
-    if (page === 1) {
-      currentData.current = data;
-    } else {
-      currentData.current = [...currentData.current, ...data];
-    }
-  }, [data]);
 
   const renderItem = ({item}: {item: FeedItemType}) => {
     return <FeedItem item={item} />;
