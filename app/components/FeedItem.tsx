@@ -1,14 +1,20 @@
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import React, {useState} from 'react';
 import {FeedItemType} from '../type';
-import AttachmentList from './AttachmentList';
 import IconHeart from '../../assets/IconHeart';
 import IconMessage from '../../assets/IconMessage';
 import FeedComment from './FeedComment';
 import FeedHeader from './FeedHeader';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {ParamsStack} from '../navigation/MainNavigation';
+import {ParamsStack} from '../navigation/params';
 
 interface Props {
   item: FeedItemType;
@@ -28,23 +34,18 @@ export default function FeedItem({item, isDetail}: Props) {
       {!isDetail && <FeedHeader item={item} />}
 
       <View style={styles.actionsContainer}>
-        {item.title && <Text style={styles.desc}>{item.title}</Text>}
+        <Text style={styles.desc}>{item.origin.name}</Text>
 
-        <AttachmentList
-          attachments={item.attachment}
-          onAttachmentPress={onAttachmentPress}
-        />
+        <TouchableWithoutFeedback onPress={onAttachmentPress}>
+          <Image source={{uri: item.image}} style={styles.feedImage} />
+        </TouchableWithoutFeedback>
 
         {isDetail && (
           <>
-            <Text style={styles.viewText}>
-              {formatNumber(item.views)} lượt xem
-            </Text>
+            <Text style={styles.viewText}>0 lượt xem</Text>
 
             <Text style={styles.viewText}>
-              {formatNumber(item.count_like)} thích •{' '}
-              {formatNumber(item.count_comment)} bình luận •{' '}
-              {formatNumber(item.count_share)} chia sẻ
+              0 thích • 0 bình luận • 0 chia sẻ
             </Text>
           </>
         )}
@@ -54,15 +55,13 @@ export default function FeedItem({item, isDetail}: Props) {
             <IconHeart active={liked} />
           </TouchableOpacity>
 
-          <Text style={styles.likeText}>{formatNumber(item.likes)}</Text>
+          <Text style={styles.likeText}>0</Text>
 
           <TouchableOpacity style={styles.messageIcon}>
             <IconMessage />
           </TouchableOpacity>
 
-          <Text style={styles.likeText}>
-            {formatNumber(item.count_comment)}
-          </Text>
+          <Text style={styles.likeText}>0</Text>
         </View>
       </View>
 
@@ -82,20 +81,22 @@ export const formatNumber = (num: number) => {
 };
 
 const styles = StyleSheet.create({
-  actionsContainer: {paddingHorizontal: 16, marginBottom: 8, marginTop: 12},
+  feedImage: {height: 500, width: '100%', borderRadius: 8},
+  actionsContainer: {paddingHorizontal: 16, marginVertical: 8},
   messageIcon: {marginLeft: 40},
-  viewText: {color: '#71717A', fontSize: 12, marginBottom: 8},
+  viewText: {color: '#71717A', fontSize: 12, marginTop: 8},
   likeText: {
     color: '#4D5761',
     marginLeft: 4,
   },
   likeContainer: {
+    marginTop: 8,
     paddingVertical: 8,
     paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
   },
 
-  desc: {fontSize: 16, lineHeight: 24, marginVertical: 8},
+  desc: {fontSize: 16, lineHeight: 24, marginBottom: 8},
   feedItem: {backgroundColor: '#FFF', marginBottom: 8},
 });

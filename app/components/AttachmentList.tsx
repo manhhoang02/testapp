@@ -1,7 +1,6 @@
 import React, {useRef} from 'react';
 import {View, Image, StyleSheet, Pressable} from 'react-native';
 import Video, {VideoRef} from 'react-native-video';
-import {Attachment} from '../type';
 import {useHomeStore} from '../store/homeStore';
 import {useIsFocused} from '@react-navigation/native';
 
@@ -20,7 +19,7 @@ export default function AttachmentList({
     if (attachment.app === 'videos') {
       return (
         <Video
-          key={`video-${attachment.id}`}
+          key={`video-${attachment.id}-${Math.random() + index}`}
           source={{uri: attachment.link}}
           paused={currentFeedId !== attachment.id || !isFocused}
           repeat={currentFeedId === attachment.id}

@@ -1,10 +1,4 @@
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  View,
-  ViewToken,
-} from 'react-native';
+import {ActivityIndicator, StyleSheet, View} from 'react-native';
 import React, {
   useCallback,
   useEffect,
@@ -17,69 +11,69 @@ import HomeHeader from './Home.Header';
 import axios from 'axios';
 import {FeedItemType} from '../../type';
 import FeedItem from '../../components/FeedItem';
-import {useHomeStore} from '../../store/homeStore';
+import {FlashList} from '@shopify/flash-list';
 
 let page = 1;
 
 export default function Home() {
   const navigation = useNavigation();
-  const setCurrentFeedIndex = useHomeStore(state => state.setCurrentFeedId);
 
   const currentData = useRef<FeedItemType[]>([]);
+  const refOnEndReachedCalled = useRef(true);
 
   const [data, setData] = useState<FeedItemType[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [noLoadMore, setNoLoadMore] = useState(false);
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    page = 1;
-    getData();
-    setCurrentFeedIndex(data[0].attachment[0].id);
-  };
-
-  const onEndReached = () => {
-    if (!loadingMore) {
-      setLoadingMore(true);
-      page++;
-      // getData();
-    }
-  };
-
-  const getData = async () => {
-    await axios
-      .get(
-        'https://api.mockfly.dev/mocks/c9b5516e-67a2-4b90-8795-4656e6e3a410/video',
-        {params: {page, limit: 10}},
-      )
+  const getData = useCallback(() => {
+    axios
+      .get('https://rickandmortyapi.com/api/character', {
+        params: {page, limit: 10},
+      })
       .then(res => {
         if (res.data) {
-          const _data: FeedItemType[] = res.data.data;
-          // setData(_data);
           if (page === 1) {
-            setData(_data);
-            currentData.current = _data;
+            currentData.current = res.data.results;
+            setData(currentData.current);
           } else {
-            setData(prevData => {
-              const newData = [...prevData, ..._data];
-              currentData.current = newData;
-              return newData;
-            });
+            currentData.current = [...currentData.current, ...res.data.results];
+            setData(currentData.current);
           }
           setRefreshing(false);
-          setLoadingMore(false);
+          setNoLoadMore(false);
         }
       })
       .catch(err => {
         console.log(err);
         setRefreshing(false);
-        setLoadingMore(false);
+        setNoLoadMore(false);
       });
-  };
+  }, []);
 
   useEffect(() => {
+    page = 1;
+    currentData.current = [];
     getData();
-  }, []);
+  }, [getData]);
+
+  const onRefresh = () => {
+    refOnEndReachedCalled.current = false;
+    page = 1;
+    currentData.current = [];
+    setRefreshing(true);
+    getData();
+  };
+
+  const onEndReached = () => {
+    if (!refOnEndReachedCalled.current) {
+      if (!noLoadMore) {
+        page++;
+        setNoLoadMore(true);
+        getData();
+      }
+      refOnEndReachedCalled.current = true;
+    }
+  };
 
   const renderItem = ({item}: {item: FeedItemType}) => {
     return <FeedItem item={item} />;
@@ -93,40 +87,24 @@ export default function Home() {
     });
   }, [header, navigation]);
 
-  const viewConfigRef = useRef({
-    viewAreaCoveragePercentThreshold: 60,
-    minimumViewTime: 300,
-  });
-
-  const onViewableItemsChanged = useCallback(
-    (info: {
-      viewableItems: ViewToken<FeedItemType>[];
-      changed: ViewToken<FeedItemType>[];
-    }) => {
-      const first = info.viewableItems[0]?.item.attachment[0].id;
-      setCurrentFeedIndex(first);
-    },
-    [setCurrentFeedIndex],
-  );
-
-  console.log(currentData.current.length);
-
   return (
     <View style={styles.container}>
-      <FlatList
-        // data={currentData.current}
+      <FlashList
+        estimatedItemSize={200}
         data={data}
         renderItem={renderItem}
         refreshing={refreshing}
         onRefresh={onRefresh}
         keyExtractor={item => item.id.toString()}
-        contentContainerStyle={styles.feedsContainer}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewConfigRef.current}
+        style={styles.feedsContainer}
+        contentContainerStyle={{}}
+        onMomentumScrollBegin={() => {
+          refOnEndReachedCalled.current = false;
+        }}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.1}
         ListFooterComponent={
-          loadingMore ? (
+          noLoadMore ? (
             <View style={{}}>
               <ActivityIndicator />
             </View>

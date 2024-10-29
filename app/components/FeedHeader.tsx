@@ -23,17 +23,17 @@ export default function FeedHeader({item, isDetail}: Props) {
 
       <Image
         source={{
-          uri: item.user_create.avatar,
+          uri: item.image,
         }}
         style={styles.feedAvatar}
       />
       <View style={styles.flex}>
         <View style={styles.fullnameContainer}>
-          <Text style={styles.fullname}>{item.user_create.fullname}</Text>
+          <Text style={styles.fullname}>{item.name}</Text>
           <IconVerified />
         </View>
         <Text style={styles.usernameText}>
-          @{item.user_create.username} • {item.time_created}
+          @{item.species} • {new Date(item.created).toUTCString()}
         </Text>
       </View>
 

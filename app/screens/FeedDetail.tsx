@@ -2,9 +2,9 @@ import {ScrollView, StyleSheet, View} from 'react-native';
 import React from 'react';
 import FeedHeader from '../components/FeedHeader';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {ParamsStack} from '../navigation/MainNavigation';
 import FeedItem from '../components/FeedItem';
 import FeedComment from '../components/FeedComment';
+import {ParamsStack} from '../navigation/params';
 
 export default function FeedDetail({
   route,
